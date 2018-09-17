@@ -1,18 +1,50 @@
-/*! \file */
+/*! \file
+ */
+
+/*! \mainpage The best square and linear solver
+ *
+ * \section Introduction
+ *
+ * This is the introduction.
+ *
+ * \section Installation
+ *
+ * \subsection step1 Step 1: Opening the box
+ *
+ * etc...
+ */
+
 #include <iostream>
 #include <cmath>
 #include <random>
 
 #define WARN(assertion) std::cout << ((assertion) ? "Pass successful\n\n" : "Wrong answer to this test\n\n");
 
-const double eps = 1e-9;
+const double EPS = 1e-9;
 const int INF_ROOTS = -1;
 
 inline bool is_zero(double number) {
-    return fabs(number) <= eps;
+    return fabs(number) <= EPS;
 }
 
+/*! Solves a linear equation bx + c = 0
+ *
+ *  \param [in] b   b ‐ double coefficient
+ *  \param [in] c   c ‐ double coefficient
+ *  \param [out] x1 Pointer to the root
+ *
+ *  \return Number of roots
+ *
+ *  \note In case of infinite number of roots,
+ *  returns INF_ROOTS.
+ */
+
 int solve_linear(double b, double c, double *x1) {
+
+    assert (std::isfinite(b));
+    assert (std::isfinite(c));
+    assert(x1 != nullptr);
+
     if (is_zero(b)) {
         return (c == 0 ? INF_ROOTS : 0);
     } else {
@@ -47,6 +79,9 @@ int solve_square(double a, double b, double c, double *x1, double *x2) {
 
     if (is_zero(a)) {
         return solve_linear(b, c, x1);
+    } else if (is_zero(c)) {
+        *x2 = 0;
+        return solve_linear(a, b, x1) + 1;
     } else {
         double d = b * b - 4 * a * c;
         if (is_zero(d)) {
@@ -136,7 +171,7 @@ int main() {
     std::cout << "Square equation solver\n";
     Solve_square_test solve_square_test;
     solve_square_test.all_zeroes_test();
-    solve_square_test.multi_random_test(10);
+    solve_square_test.multi_random_test(1000000);
     solve_square_test.one_root_test();
     solve_square_test.two_roots_test();
     std::cout << "All tests pass successfully\n";
