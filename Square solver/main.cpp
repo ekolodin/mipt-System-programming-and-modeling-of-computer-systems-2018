@@ -1,5 +1,4 @@
-/*! \file
- */
+/*! \file */
 
 /*! \mainpage The best square and linear solver
  *
@@ -18,7 +17,8 @@
 #include <cmath>
 #include <random>
 
-#define WARN(assertion) std::cout << ((assertion) ? "Pass successful\n\n" : "Wrong answer to this test\n\n");
+#define WARN(assertion) std::cout << #assertion << '\n'; \
+     std::cout << ((assertion) ? "Pass successful\n\n" : "Wrong answer to this test\n\n");
 
 const double EPS = 1e-9;
 const int INF_ROOTS = -1;
@@ -41,8 +41,8 @@ inline bool is_zero(double number) {
 
 int solve_linear(double b, double c, double *x1) {
 
-    assert (std::isfinite(b));
-    assert (std::isfinite(c));
+    assert(std::isfinite(b));
+    assert(std::isfinite(c));
     assert(x1 != nullptr);
 
     if (is_zero(b)) {
@@ -69,9 +69,9 @@ int solve_linear(double b, double c, double *x1) {
 
 int solve_square(double a, double b, double c, double *x1, double *x2) {
 
-    assert (std::isfinite(a));
-    assert (std::isfinite(b));
-    assert (std::isfinite(c));
+    assert(std::isfinite(a));
+    assert(std::isfinite(b));
+    assert(std::isfinite(c));
 
     assert(x1 != nullptr);
     assert(x2 != nullptr);
@@ -114,14 +114,15 @@ public:
 
     void one_root_test() {
         std::cout << "One root test\n";
-        WARN(solve_square(1, 2, 1, &x1, &x2) == 1 && (x1 == -1));
+        WARN(solve_square(1, 2, 1, &x1, &x2) == 1);
+        WARN(x1 == -1);
     }
 
     void two_roots_test() {
         std::cout << "Two roots test\n";
-        WARN((solve_square(1, 10, 1, &x1, &x2) == 2) &&
-             (is_zero(x1 * x1 + 10 * x1 + 1)) &&
-             (is_zero(x2 * x2 + 10 * x2 + 1)));
+        WARN(solve_square(1, 10, 1, &x1, &x2) == 2);
+        WARN(is_zero(x1 * x1 + 10 * x1 + 1));
+        WARN(is_zero(x2 * x2 + 10 * x2 + 1));
     }
 
 private:
@@ -133,24 +134,25 @@ private:
         double a = dis(gen);
         double b = dis(gen);
         double c = dis(gen);
-        std::cout << "Random test №" << number << ": a = " << a << ", b = " << b << ", c = " << c << "\n";
+        std::cout << "\n\nRandom test №" << number << ": a = " << a << ", b = " << b << ", c = " << c << "\n";
 
         int nRoots = solve_square(a, b, c, &x1, &x2);
         switch (nRoots) {
             case 0:
-                WARN(b * b - 4 * a * c < 0);
+            WARN(b * b - 4 * a * c < 0);
                 break;
             case 1:
                 if (a) {
-                    WARN(b * b - 4 * a * c == 0 && is_zero(a * x1 * x1 + b * x1 + c));
+                    WARN(b * b - 4 * a * c == 0);
+                    WARN(is_zero(a * x1 * x1 + b * x1 + c));
                 } else {
                     WARN(is_zero(a * x1 * x1 + b * x1 + c));
                 }
                 break;
             case 2:
-                WARN((b * b - 4 * a * c > 0) &&
-                     is_zero(a * x1 * x1 + b * x1 + c) &&
-                     is_zero(a * x2 * x2 + b * x2 + c));
+            WARN(b * b - 4 * a * c > 0);
+                WARN(is_zero(a * x1 * x1 + b * x1 + c));
+                WARN(is_zero(a * x2 * x2 + b * x2 + c));
                 break;
             case -1:
                 x1 = dis(gen);
@@ -171,7 +173,7 @@ int main() {
     std::cout << "Square equation solver\n";
     Solve_square_test solve_square_test;
     solve_square_test.all_zeroes_test();
-    solve_square_test.multi_random_test(1000000);
+    solve_square_test.multi_random_test(10);
     solve_square_test.one_root_test();
     solve_square_test.two_roots_test();
     std::cout << "All tests pass successfully\n";
