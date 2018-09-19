@@ -8,7 +8,7 @@
  *
  * \section Installation
  *
- * \subsection step1 Step 1: Opening the box
+ * \subsection This is the installation.
  *
  * etc...
  */
@@ -39,18 +39,17 @@ inline bool is_zero(double number) {
  *  returns INF_ROOTS.
  */
 
-int solve_linear(double b, double c, double *x1) {
+int solve_linear(double b, double c, double *x) {
 
     assert(std::isfinite(b));
     assert(std::isfinite(c));
-    assert(x1 != nullptr);
+    assert(x != nullptr);
 
     if (is_zero(b)) {
         return (c == 0 ? INF_ROOTS : 0);
-    } else {
-        *x1 = -c / b;
-        return 1;
     }
+    *x = -c / b;
+    return 1;
 }
 
 /*! Solves a square equation ax^2 + bx + c = 0
@@ -79,27 +78,36 @@ int solve_square(double a, double b, double c, double *x1, double *x2) {
 
     if (is_zero(a)) {
         return solve_linear(b, c, x1);
-    } else if (is_zero(c)) {
+    }
+    if (is_zero(c)) {
         *x2 = 0;
         return solve_linear(a, b, x1) + 1;
-    } else {
-        double d = b * b - 4 * a * c;
-        if (is_zero(d)) {
-            *x1 = *x2 = -b / (2 * a);
-            return 1;
-        } else if (d < 0) {
-            return 0;
-        } else {
-            double sqrt_d = sqrt(d);
-            *x1 = (-b - sqrt_d) / (2 * a);
-            *x2 = (-b + sqrt_d) / (2 * a);
-            return 2;
-        }
     }
+    double d = b * b - 4 * a * c;
+    if (is_zero(d)) {
+        *x1 = *x2 = -b / (2 * a);
+        return 1;
+    }
+    if (d < 0) {
+        return 0;
+    }
+    double sqrt_d = sqrt(d);
+    *x1 = (-b - sqrt_d) / (2 * a);
+    *x2 = (-b + sqrt_d) / (2 * a);
+    return 2;
 }
 
 class Solve_square_test {
 public:
+
+    void run_all_tests() {
+        all_zeroes_test();
+        multi_random_test(10);
+        one_root_test();
+        two_roots_test();
+    }
+
+private:
 
     void all_zeroes_test() {
         std::cout << "All zeroes test\n";
@@ -125,7 +133,6 @@ public:
         WARN(is_zero(x2 * x2 + 10 * x2 + 1));
     }
 
-private:
     void random_test(int number) {
         std::random_device rd;  // Will be used to obtain a seed for the random number engine
         std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
@@ -154,7 +161,7 @@ private:
                 WARN(is_zero(a * x1 * x1 + b * x1 + c));
                 WARN(is_zero(a * x2 * x2 + b * x2 + c));
                 break;
-            case -1:
+            case INF_ROOTS:
                 x1 = dis(gen);
                 WARN(is_zero(a * x1 * x1 + b * x1 + c));
                 break;
@@ -171,12 +178,7 @@ private:
 
 int main() {
     std::cout << "Square equation solver\n";
-    Solve_square_test solve_square_test;
-    solve_square_test.all_zeroes_test();
-    solve_square_test.multi_random_test(10);
-    solve_square_test.one_root_test();
-    solve_square_test.two_roots_test();
-    std::cout << "All tests pass successfully\n";
+    Solve_square_test().run_all_tests();
     std::cout << "Enter a, b, c:\n";
 
     double a = 0, b = 0, c = 0, x1 = 0, x2 = 0;
@@ -194,7 +196,7 @@ int main() {
         case 2:
             std::cout << "x1 = " << x1 << ", x2 = " << x2;
             break;
-        case -1:
+        case INF_ROOTS:
             std::cout << "Any number";
             break;
         default:
