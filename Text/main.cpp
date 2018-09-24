@@ -1,145 +1,72 @@
 #include <iostream>
+#include "Text.h"
 
-class Text {
-public:
-    explicit Text(const char *path_to_file) {
-        file_ = fopen(path_to_file, "r");
-        if (!file_) {
-            printf("File not found\n");
-        } else {
-            set_size_();
+typedef unsigned int ui;
 
-            text_ = new char[size_of_file_];
-            sorted_text_ = new char[size_of_file_];
-            rev_sorted_text_ = new char[size_of_file_];
 
-            fread(text_, sizeof(char), size_of_file_, file_);
-            strcpy(sorted_text_, text_);
-            strcpy(rev_sorted_text_, text_);
+int reverse_compare(const char *first, const char *second) {
+    size_t len_first = strlen(first) - 1;
+    size_t len_second = strlen(second) - 1;
 
-            for (int i = 0; i < size_of_file_; ++i) {
-                if (text_[i] == '\n') {
-                    ++count_lines_;
-                }
-            }
+    while (len_first > 0 && !isalnum(*(first + len_first))) {
+        --len_first;
+    }
+    while (len_second > 0 && !isalnum(*(second + len_second))) {
+        --len_second;
+    }
 
-            pointers_to_strings_ = new char *[count_lines_];
+    while (len_first > 0 && len_second > 0 &&
+           (*(first + len_first) == *(second + len_second))) {
+
+        --len_first;
+        --len_second;
+        while (len_first > 0 && !isalnum(*(first + len_first))) {
+            --len_first;
+        }
+        while (len_second > 0 && !isalnum(*(second + len_second))) {
+            --len_second;
         }
     }
+    return *(first + len_first) - *(second + len_second);
+}
 
-    ~Text() {
-        fclose(file_);
-        delete[] text_;
-        delete[] sorted_text_;
-        delete[] rev_sorted_text_;
-        delete[] pointers_to_strings_;
+
+inline void write(const char *path_to_file, char **pointers, ui size) {
+    FILE *file = fopen(path_to_file, "w");
+    if (!file) {
+        perror("Cannot be opened for write\n");
+        return;
     }
 
-    void sort_straight(const char *path_to_file) {
-        FILE *file_sort_straight = fopen(path_to_file, "w");
-        if (!file_sort_straight) {
-            printf("File not found\n");
-        } else {
-            set_pointers_(sorted_text_);
-
-            std::sort(pointers_to_strings_, pointers_to_strings_ + count_lines_,
-                      [](const char *a, const char *b) { return strcmp(a, b) < 0; });
-            for (int i = 0; i < count_lines_; ++i) {
-                fwrite(pointers_to_strings_[i], sizeof(char), sizeof(char) * strlen(pointers_to_strings_[i]),
-                       file_sort_straight);
-                fputc('\n', file_sort_straight);
-            }
-            fclose(file_sort_straight);
-        }
+    for (int i = 0; i < size; ++i) {
+        fwrite(pointers[i], sizeof(char), sizeof(char) * strlen(pointers[i]), file);
+        fputc('\n', file);
     }
+    fclose(file);
+}
 
-    void sort_reverse(const char *path_to_file) {
-        FILE *file_rev_sort = fopen(path_to_file, "w");
-        if (!file_rev_sort) {
-            printf("File not found\n");
-        } else {
-            set_pointers_(rev_sorted_text_);
-
-            std::sort(pointers_to_strings_, pointers_to_strings_ + count_lines_, rev_cmp);
-            for (int i = 0; i < count_lines_; ++i) {
-                fwrite(pointers_to_strings_[i], sizeof(char), sizeof(char) * strlen(pointers_to_strings_[i]),
-                       file_rev_sort);
-                fputc('\n', file_rev_sort);
-            }
-            fclose(file_rev_sort);
-        }
-    }
-
-private:
-    long set_size_() {
-        fseek(file_, 0, SEEK_END);
-        size_of_file_ = ftell(file_);
-        fseek(file_, 0, SEEK_SET);
-    }
-
-    void set_pointers_(char *text) {
-        int counter = 0;
-        pointers_to_strings_[counter++] = text;
-
-        for (int i = 0; i < size_of_file_; ++i) {
-            if (text[i] == '\n') {
-                if (i != size_of_file_ - 1) {
-                    pointers_to_strings_[counter++] = &text[i + 1];
-                }
-                text[i] = '\0';
-            }
-        }
-    }
-
-    static bool rev_cmp(char *a, char *b) {
-        std::reverse(a, a + strlen(a));
-        std::reverse(b, b + strlen(b));
-
-        bool answer = strcmp_punct_(a, b) > 0;
-
-        std::reverse(a, a + strlen(a));
-        std::reverse(b, b + strlen(b));
-
-        return answer;
-    }
-
-    static int strcmp_punct_(const char *a, const char *b) {
-        while (*a && ispunct(*a)) {
-            a++;
-        }
-        while (*b && ispunct(*b)) {
-            b++;
-        }
-
-        while (*a && *b && (*a == *b)) {
-            ++a;
-            ++b;
-            while (*a && ispunct(*a)) {
-                a++;
-            }
-            while (*b && ispunct(*b)) {
-                b++;
-            }
-        }
-        return *a - *b;
-    }
-
-private:
-    FILE *file_;
-    long size_of_file_{};
-    unsigned int count_lines_ = 0;
-    char *text_;
-    char *sorted_text_;
-    char *rev_sorted_text_;
-    char **pointers_to_strings_;
-};
 
 int main() {
     // How to use class Text
-    
+
     Text text("/Users/egor/CLionProjects/text/input.txt");
-    text.sort_straight("/Users/egor/CLionProjects/text/sorted.txt");
-    text.sort_reverse("/Users/egor/CLionProjects/text/rev_sorted.txt");
+
+    std::cout << "The original: \n\n";
+    text.show();
+    std::cout << "\n\n";
+
+    auto copy = text.get_copy();
+
+
+    std::sort(copy, copy + text.get_lines(),
+              [](const char *a, const char *b) { return strcmp(a, b) < 0; });
+    write("/Users/egor/CLionProjects/text/sorted.txt", copy, text.get_lines());
+
+
+    std::sort(copy, copy + text.get_lines(),
+              [](const char *a, const char *b) { return reverse_compare(a, b) < 0; });
+    write("/Users/egor/CLionProjects/text/rev_sorted.txt", copy, text.get_lines());
+
 
     return 0;
 }
