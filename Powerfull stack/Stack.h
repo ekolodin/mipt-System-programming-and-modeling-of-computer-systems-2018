@@ -81,7 +81,7 @@ private:
 
 
 template<typename T>
-bool verify(Stack<T> *stack) {
+bool verify(const Stack<T> *stack) {
     return stack &&
            stack->get_first_canary() == DEADBEEF &&
            stack->get_last_canary() == DEADBEEF &&
@@ -93,7 +93,7 @@ bool verify(Stack<T> *stack) {
 
 
 template<typename T>
-void dump(Stack<T> *stack) {
+void dump(Stack<T> *stack) { // member of a class
     if (!stack) {
         std::cerr << "Pointer to stack is null\n";
         return;
@@ -124,7 +124,7 @@ void dump(Stack<T> *stack) {
     if (stack->get_size()) {
 
         std::cerr << "Elements which were in stack:\n";
-        while (stack->get_size()) {
+        while (stack->get_size()) { // buffer
             T element;
             stack->top(element);
             std::cerr << element << ' ';
@@ -144,7 +144,7 @@ ull_t Stack<T>::count_checksum_() const {
 
     ull_t sum = 0;
     for (int i = 0; i < sizeof(*this); i++) {
-        sum += ((char *) this)[i];
+        sum += ((char *) this)[i] * i;
     }
 
     sum_ = old_value;
@@ -208,7 +208,7 @@ void Stack<T>::resize_() {
     *begin_canary_buffer_ = DEADBEEF;
     new_buffer += sizeof(int);
 
-    memcpy(new_buffer, buffer_, (capacity_ / 2) * sizeof(T));
+    memcpy(new_buffer, buffer_, (capacity_ / 2) * sizeof(T)); // std::copy
 
     end_canary_buffer_ = (int *) (new_buffer + sizeof(int) + capacity_ * sizeof(T));
     *end_canary_buffer_ = DEADBEEF;
