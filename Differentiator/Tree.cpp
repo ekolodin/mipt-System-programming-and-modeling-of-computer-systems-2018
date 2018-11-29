@@ -1,5 +1,12 @@
 #include "Tree.h"
-#include <iostream>
+
+
+#define zero_plus_node(node)      (L(node) && R(node) && node->is_add() && L(node)->is_zero())
+#define node_mul_zero(node)       (L(node) && R(node) && node->is_mul() && R(node)->is_zero())
+#define one_mul_node(node)        (L(node) && R(node) && node->is_mul() && L(node)->is_one())
+#define node_mul_div_one(node)    (L(node) && R(node) && (node->is_mul() || node->is_div()) && R(node)->is_one())
+#define node_plus_minus_one(node) (L(node) && R(node) && (node->is_add() || node->is_sub()) && R(node)->is_zero())
+#define zero_mul_div_node(node)   (L(node) && R(node) && (node->is_mul() || node->is_div()) && L(node)->is_zero())
 
 
 void Tree::show_tree(std::vector<std::string> &expression) {
@@ -16,57 +23,40 @@ void Tree::simplify() {
 
             if (node->is_sub()) { result = L(node)->value_ - R(node)->value_; }
 
-            if (node->is_mult()) { result = L(node)->value_ * R(node)->value_; }
+            if (node->is_mul()) { result = L(node)->value_ * R(node)->value_; }
 
             if (node->is_div()) { result = L(node)->value_ / R(node)->value_; }
 
-            destroy(L(node));
-            destroy(R(node));
             node->set_val(result);
-        }
-        // 1 * node --> node
-        if (L(node) && R(node) && node->is_mult() && L(node)->is_one()) {
-            destroy(L(node));
-            node = R(node);
-        }
-        // node * / 1 --> node
-        if (L(node) && R(node) && (node->is_mult() || node->is_div()) && R(node)->is_one()) {
-            destroy(R(node));
-            node = L(node);
-        }
-        // 0 + node --> node
-        if (L(node) && R(node) && node->is_add() && L(node)->is_zero()) {
-            destroy(L(node));
-            node = R(node);
-        }
-        // node +- 0 --> node
-        if (L(node) && R(node) && (node->is_add() || node->is_sub()) && R(node)->is_zero()) {
-            destroy(R(node));
-            node = L(node);
-        }
-        // 0 * / node --> 0
-        if (L(node) && R(node) && (node->is_mult() || node->is_div()) && L(node)->is_zero()) {
+
             destroy(L(node));
             destroy(R(node));
-            node->set_val(0);
+            node->left_ = nullptr;
+            node->right_ = nullptr;
         }
-        // node * 0 --> 0
-        if (L(node) && R(node) && node->is_mult() && R(node)->is_zero()) {
+        // 0 + node --> node  or  node * 0 --> 0  or  1 * node --> node
+        if (zero_plus_node(node) || node_mul_zero(node) || one_mul_node(node)) {
             destroy(L(node));
+            auto right_subtree = R(node);
+            *node = *R(node);
+            delete right_subtree;
+        }
+        // node * / 1 --> node  or  node +- 0 --> node  or  0 * / node --> 0
+        if (node_mul_div_one(node) || node_plus_minus_one(node) || zero_mul_div_node(node)) {
             destroy(R(node));
-            node->set_val(0);
+            auto left_subtree = L(node);
+            *node = *L(node);
+            delete left_subtree;
         }
     });
-
 }
 
 void Tree::destroy(Node *node) {
     Tree destroy_(node);
-    node = nullptr;
 }
 
 Node *Tree::differentiate_(Node *node) {
-    if (node->is_mult()) {
+    if (node->is_mul()) {
         auto dif_node = new Node('+');
 
         L(dif_node) = new Node('*');

@@ -6,23 +6,28 @@
 int main() {
 
     Text text("/Users/egor/CLionProjects/Differentiator Tree/expression.txt");
-    Tree tree(text.get_copy()[0]);
-    std::vector<std::string> expression;
-    tree.simplify();
-    tree.show_tree(expression);
-    for (const auto &i : expression) {
-        std::cout << i;
-    }
+    for (int line = 0; line < 5; ++line) {
+        Tree tree(text.get_copy()[line]);
+        std::vector<std::string> expression;
+        tree.simplify();
+        tree.show_tree(expression);
+        for (const auto &i : expression) {
+            std::cout << i;
+        }
 
-    expression.clear();
-    std::cout << '\n';
+        std::cout << '\n';
 
-    Tree diff_tree(tree.differentiate());
-    diff_tree.simplify();
-    diff_tree.show_tree(expression);
+        expression.clear();
+        Tree diff(tree.differentiate());
+        diff.simplify();
+        diff.show_tree(expression);
 
-    for (const auto &i : expression) {
-        std::cout << i;
+        for (const auto &i : expression) {
+            std::cout << i;
+        }
+
+        std::cout << "\n\n";
+
     }
 
     return 0;

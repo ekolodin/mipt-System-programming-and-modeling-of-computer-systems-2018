@@ -58,27 +58,29 @@ private:
     Node *create_tree(int left, int right);
 
     template<typename Lambda>
-    void dfs(Node *node, dfs_type flag, Lambda &&lambda) {
-        if (node) {
-            Node open_bracket('(');
-            Node close_bracket(')');
-
-            if (flag == dfs_type::show_tree_) { lambda(&open_bracket); }
-
-            if (flag == dfs_type::simplify_) { lambda(node); }
-
-            dfs(L(node), flag, lambda);
-
-            if (flag != dfs_type::destructor_) { lambda(node); }
-
-            dfs(R(node), flag, lambda);
-
-            if (flag == dfs_type::simplify_) { lambda(node); }
-
-            if (flag == dfs_type::show_tree_) { lambda(&close_bracket); }
-
-            if (flag == dfs_type::destructor_) { lambda(node); }
+    void dfs(Node *node, dfs_type flag, Lambda &&lambda) { // rename flag to where to call, enum before + inside + after
+        if (!node) {
+            return;
         }
+
+        Node open_bracket('(');
+        Node close_bracket(')');
+
+        if (flag == dfs_type::show_tree_) { lambda(&open_bracket); }
+
+        if (flag == dfs_type::simplify_) { lambda(node); }
+
+        dfs(L(node), flag, lambda);
+
+        if (flag != dfs_type::destructor_) { lambda(node); }
+
+        dfs(R(node), flag, lambda);
+
+        if (flag == dfs_type::simplify_) { lambda(node); }
+
+        if (flag == dfs_type::show_tree_) { lambda(&close_bracket); }
+
+        if (flag == dfs_type::destructor_) { lambda(node); }
     }
 
 private:

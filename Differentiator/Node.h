@@ -46,22 +46,29 @@ struct Node {
         }
     }
 
-    void set_var() {
-        type_ = Type::variable;
-        variable_ = 'x';
-    }
-
     void set_val(double val) {
         type_ = Type::value;
         value_ = val;
     }
 
-    std::string to_str() {
+    std::string to_str() const {
         if (type_ == Type::value) {
             return std::to_string(value_);
         }
 
         return std::string(1, (type_ == Type::variable ? variable_ : operation_));
+    }
+
+    Node &operator=(const Node &node) {
+        left_ = node.left_;
+        right_ = node.right_;
+
+        type_ = node.type_;
+        value_ = node.value_;
+        variable_ = node.variable_;
+        operation_ = node.operation_;
+
+        return *this;
     }
 
     bool is_val() { return type_ == Type::value; }
@@ -74,7 +81,7 @@ struct Node {
 
     bool is_sub() { return type_ == Type::operation && operation_ == '-'; }
 
-    bool is_mult() { return type_ == Type::operation && operation_ == '*'; }
+    bool is_mul() { return type_ == Type::operation && operation_ == '*'; }
 
     bool is_div() { return type_ == Type::operation && operation_ == '/'; }
 };
