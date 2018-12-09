@@ -26,7 +26,9 @@ public:
 
     void show_tree(std::vector<std::string> &expression);
 
-    void simplify();
+    void simplify(std::ostream &os = std::cout);
+
+    void make_report(std::ostream &os);
 
 public:
 
@@ -58,7 +60,7 @@ private:
     Node *create_tree(int left, int right);
 
     template<typename Lambda>
-    void dfs(Node *node, dfs_type flag, Lambda &&lambda) { // rename flag to where to call, enum before + inside + after
+    void dfs(Node *node, dfs_type flag, Lambda &&lambda) {
         if (!node) {
             return;
         }

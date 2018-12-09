@@ -1,3 +1,5 @@
+#include <fstream>
+#include <iostream>
 #include "Tree.h"
 
 
@@ -15,8 +17,8 @@ void Tree::show_tree(std::vector<std::string> &expression) {
     });
 }
 
-void Tree::simplify() {
-    dfs(root_, dfs_type::simplify_, [this](Node *node) {
+void Tree::simplify(std::ostream &os) {
+    dfs(root_, dfs_type::simplify_, [this, &os](Node *node) {
         if (L(node) && R(node) && L(node)->is_val() && R(node)->is_val()) {
             double result = 0;
             if (node->is_add()) { result = L(node)->value_ + R(node)->value_; }
@@ -33,6 +35,8 @@ void Tree::simplify() {
             destroy(R(node));
             node->left_ = nullptr;
             node->right_ = nullptr;
+
+            make_report(os);
         }
         // 0 + node --> node  or  node * 0 --> 0  or  1 * node --> node
         if (zero_plus_node(node) || node_mul_zero(node) || one_mul_node(node)) {
@@ -40,6 +44,8 @@ void Tree::simplify() {
             auto right_subtree = R(node);
             *node = *R(node);
             delete right_subtree;
+
+            make_report(os);
         }
         // node * / 1 --> node  or  node +- 0 --> node  or  0 * / node --> 0
         if (node_mul_div_one(node) || node_plus_minus_one(node) || zero_mul_div_node(node)) {
@@ -47,6 +53,8 @@ void Tree::simplify() {
             auto left_subtree = L(node);
             *node = *L(node);
             delete left_subtree;
+
+            make_report(os);
         }
     });
 }
@@ -154,4 +162,14 @@ Node *Tree::create_tree(int left, int right) {
     R(node) = create_tree(middle + 2, right - 1);
 
     return node;
+}
+
+void Tree::make_report(std::ostream &os) {
+    std::vector<std::string> expression;
+    show_tree(expression);
+
+    for (const auto &str : expression) {
+        os << str;
+    }
+    os << '\n';
 }
